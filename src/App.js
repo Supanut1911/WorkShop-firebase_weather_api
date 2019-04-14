@@ -36,7 +36,8 @@ class App extends Component {
     country : undefined,
     humidity : undefined ,
     description : undefined ,
-    error : undefined
+    error : undefined,
+    wweather : [ {id:1 , temperature:undefined}]
   }
 
   getWeather = async (e) => {
@@ -51,16 +52,27 @@ class App extends Component {
     const data = await api_call.json()
     console.log(data)
     if( city && country){
-      this.setState({
-        temperature : data.main.temp,
-        city : data.name,
-        country : data.sys.country,
-        humidity: data.main.humidity,
-        description: data.weather[0].description,
-        error : ""
-  
-      })
+      if(data.cod == '404') {
+
+        console.log("do this")
+        this.setState({
+          
+          error : "ERROR input"
+        })
+      }
+      else {
+        this.setState({
+          temperature : data.main.temp,
+          city : data.name,
+          country : data.sys.country,
+          humidity: data.main.humidity,
+          description: data.weather[0].description,
+          error : ""
+        })
+      }
+      
     }
+  
     else {
       this.setState({
         temperature : undefined,
@@ -68,16 +80,30 @@ class App extends Component {
         country : undefined,
         humidity: undefined,
         description: undefined,
-        error : "pls enter the city and the country"
+        error : "Please enter values"
       })
     }
+    
+   
+  }
+
+  addTodatabase = () => {
+    let dbCon = firebase.database().ref('/OverAllWeather');
+    dbCon.push({temp: this.state.temperature ,
+       city:this.state.city , 
+       country:this.state.country,
+       humidity:this.state.humidity,
+       description:this.state.description
+    });
+    alert('Add complete !')
   }
   
   render() {
 
     
     return (
-      <div >
+      // <div >
+/*         
        <Title />
 
        <Form getWeather={this.getWeather}/>
@@ -89,10 +115,10 @@ class App extends Component {
         humidity = {this.state.humidity}
         description = {this.state.description}
         error = {this.state.error}
-        />
+        /> */
 
-      {/* //-----styly2 */}
-       {/* <Title2 />
+      // {/* //-----styly2 */}
+       /* <Title2 />
        
        <Form2 getWeather={this.getWeather}/>
 
@@ -103,8 +129,32 @@ class App extends Component {
         humidity = {this.state.humidity}
         description = {this.state.description}
         error = {this.state.error}
-        /> */}
-      </div>
+        /> */
+      // </div>
+
+      <div className="wrapper">
+        <div>
+          <div className="container">
+            <div className='row'>
+              <div className="col-xs-5 title-container">
+                <Title />
+              </div>
+              <div className="col-xs-7 form-container">
+                <Form getWeather={this.getWeather}/>
+                <Weather 
+                addTodatabase={this.addTodatabase}
+                temperature={this.state.temperature} 
+                city={this.state.city}
+                country ={this.state.country}
+                humidity = {this.state.humidity}
+                description = {this.state.description}
+                error = {this.state.error}
+                /> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> 
     );
   }
 }
